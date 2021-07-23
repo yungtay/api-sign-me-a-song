@@ -41,5 +41,31 @@ export async function negativeVote(id: number): Promise<boolean>{
         console.log(e)
         return false
     }
+}
 
+export async function randomRecommendation(): Promise<{id: number, name: string, youtubeLink: string, score: number}|boolean>{
+    try{
+        let counter = 0;
+        const percentage: number =  Math.random()
+        let randomSelection = percentage < 0.7 ? "votes > 10" : "votes <= 10"
+        let recommendation: {id: number, name: string, youtubeLink: string, score: number} = await recommendationsRepository.randomRecommendation(randomSelection)
+        while(!recommendation && counter < 1){
+            randomSelection = percentage > 0.7 ? "votes > 10" : "votes <= 10"
+            recommendation = await recommendationsRepository.randomRecommendation(randomSelection)
+            counter++
+        }
+        return recommendation
+    } catch(e){
+        console.log(e)
+        return false
+    }
+}
+
+export async function topRecommendations(amount: number): Promise<{id: number, name: string, youtubeLink: string, score: number}[]>{
+    try{
+        const recommendation:{id: number, name: string, youtubeLink: string, score: number}[] = await recommendationsRepository.topRecommendations(amount)
+        if(recommendation) return recommendation
+    } catch(e){
+        console.log(e)
+    }
 }

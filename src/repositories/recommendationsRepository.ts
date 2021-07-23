@@ -22,3 +22,15 @@ export async function negativeVote(id: number){
 export async function deleteRecommendation(id: number){
     await connection.query(`DELETE FROM recommendations WHERE id = $1 RETURNING *`, [id])
 }
+
+export async function randomRecommendation(randomSelection: string){
+    const result = await connection.query(`SELECT * FROM recommendations 
+    WHERE ${randomSelection} ORDER BY random()`)
+    if(result.rows[0]) return result.rows[0]
+}
+
+export async function topRecommendations(amount: number){
+    const result = await connection.query(`SELECT * FROM recommendations 
+    ORDER BY votes DESC LIMIT $1`, [amount])
+    if(result.rows) return result.rows
+}
