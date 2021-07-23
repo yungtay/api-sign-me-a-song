@@ -10,6 +10,12 @@ describe("POST /recommendations", () => {
     expect(response.status).toBe(200);
   });
 
+  it("should answer with a number of votes of a recommendation(id=1) to prove that was created", async () => {
+    await agent.post("/recommendations").send(recommendationsFactorie.body);
+    const votes = await recommendationsFactorie.checkRecommendationVotes()
+    expect(votes).toStrictEqual(expect.objectContaining({"votes": expect.any(Number)}))
+  });
+
   it("should answer with status 400 when the when youtubeLink is not present", async () => {
     const response = await agent.post("/recommendations").send({name: "Falamansa - Xote dos Milagress"});
     expect(response.status).toBe(400)
@@ -41,7 +47,15 @@ describe("POST /recommendations/:id/upvote", () => {
   it("should answer with status 404 if the id of the recommendations don't exist", async () => {
     const response = await agent.post("/recommendations/999/upvote")
     expect(response.status).toBe(404)
-  })  
+  })
+  
+  it("should answer with votes++ if everything is valid", async () => {
+    await recommendationsFactorie.addRecommendation()
+    const votesBefore = await recommendationsFactorie.checkRecommendationVotes()
+    await agent.post("/recommendations/1/upvote")
+    const votesAfter = await recommendationsFactorie.checkRecommendationVotes()
+    expect(votesBefore.votes + 1 === votesAfter.votes).toBe(true)
+  })
 })
 
 describe("POST /recommendations/:id/downvote", () => {
@@ -62,6 +76,14 @@ describe("POST /recommendations/:id/downvote", () => {
     const response = await agent.post("/recommendations/9/downvote")
     expect(response.status).toBe(404)
   })
+
+  it("should answer with votes-- if everything is valid", async () => {
+    await recommendationsFactorie.addRecommendation()
+    const votesBefore = await recommendationsFactorie.checkRecommendationVotes()
+    await agent.post("/recommendations/1/downvote")
+    const votesAfter = await recommendationsFactorie.checkRecommendationVotes()
+    expect(votesBefore.votes - 1 === votesAfter.votes).toBe(true)
+  })
 })
 
 describe("GET /recommendations/random", () => {
@@ -73,10 +95,9 @@ describe("GET /recommendations/random", () => {
 })
 
 describe("GET /recommendations/top/:amount", () => {
-  it("should answer with a array of objects with the number of the amount if everything is valid", async () => {
+  it("should answer with a array of objects if everything is valid", async () => {
     await recommendationsFactorie.addRecommendation()
-    const amount = 5
-    const response = await agent.get("/recommendations/top/" + amount)
+    const response = await agent.get("/recommendations/top/4")
     expect(response.body).toStrictEqual(expect.arrayContaining([expect.objectContaining({"id": expect.any(Number), "name": expect.any(String), "votes": expect.any(Number), "youtubeLink": expect.any(String)})])
   )})
 
@@ -89,6 +110,13 @@ describe("GET /recommendations/top/:amount", () => {
     await recommendationsFactorie.addRecommendation()
     const response = await agent.get("/recommendations/top/0")
     expect(response.status).toBe(400)
+  })
+
+  it("should respond with an array x objects being the x number of amount if everything is valid", async () => {
+    await recommendationsFactorie.addRecommendation()
+    const amount = 5
+    const response = await agent.get("/recommendations/top/" + amount)
+    expect(response.body.length).toBe(amount)
   })
 })
 

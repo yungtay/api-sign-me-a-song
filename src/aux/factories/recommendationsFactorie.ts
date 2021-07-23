@@ -18,8 +18,13 @@ export async function restartTable(){
 }
 
 export const body = {
-    name: "Falamansa - Xote dos Milagres",
-    youtubeLink: "https://www.youtube.com/watch?v=chwyjJbcs1Y",
+    name: "2Pac - Hit 'Em Up (Dirty)",
+    youtubeLink: "https://www.youtube.com/watch?v=41qC3w3UUkU",
 };
+
+export async function checkRecommendationVotes(){
+    const result = await connection.query(`SELECT votes FROM recommendations WHERE id = 1`)
+    if(result.rows[0]) return result.rows[0]
+}
 
 

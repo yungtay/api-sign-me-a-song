@@ -47,7 +47,6 @@ export async function randomRecommendation(req: Request, res: Response){
     try{
         const recommendation: {id: number, name: string, youtubeLink: string, score: number}|boolean = await recommendationsService.randomRecommendation()
         if(recommendation){
-            console.log(recommendation)
             return res.send(recommendation)
         } else {
             return res.sendStatus(404)
